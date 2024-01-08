@@ -34,7 +34,8 @@ from utility.compute_transformation_matrix import compute_transformation_matrix,
 from constants import *
 
 
-def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask, dump_csv, frame_max):
+def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask, dump_csv, frame_max,
+         output_video, no_gui=False):
     decryption_key = load_decryption_key()
 
     if frame_max < 0:
@@ -68,16 +69,25 @@ def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask,
     logging.info("demo: input video has %s frames, with frame size w (%s) x h (%s) and fps %.1f, frame_max = %s" %
                  (frame_count, input_video_width, input_video_height, fps, frame_max))
 
+    if output_video:
+        video_file_name_output = os.path.join(video_path, "%s_output.mp4" % (video_name.split(".")[0]))
+        outvideo_writer = cv2.VideoWriter(video_file_name_output, cv2.VideoWriter_fourcc(*'mp4v'),
+                                          fps, (input_video_width, input_video_height))
+
     if data_type == "mp4":
         if frame_count <= 0:
             return
     elif data_type == "rtsp":
         frame_count = np.iinfo(np.int32).max
 
-    cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_GUI_EXPANDED)
+    if not no_gui:
+        cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_GUI_EXPANDED)
+
     height_window = int(WIDTH_WINDOW * (input_video_height * 1. / input_video_width))
-    cv2.resizeWindow(WINDOW_NAME, WIDTH_WINDOW, height_window)
-    cv2.moveWindow(WINDOW_NAME, WINDOW_START_WIDTH, WINDOW_START_HEIGHT)
+
+    if not no_gui:
+        cv2.resizeWindow(WINDOW_NAME, WIDTH_WINDOW, height_window)
+        cv2.moveWindow(WINDOW_NAME, WINDOW_START_WIDTH, WINDOW_START_HEIGHT)
 
     # Note: cache the computed traces
     cached_trace_data = []
@@ -205,7 +215,11 @@ def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask,
                         alpha = 0.7
                         frame_ori = cv2.addWeighted(frame_for_objects, alpha, frame_ori, 1, 0)
 
-                cv2.imshow(WINDOW_NAME, frame_ori)
+                if not no_gui:
+                    cv2.imshow(WINDOW_NAME, frame_ori)
+
+                if output_video:
+                    outvideo_writer.write(frame_ori)
 
                 computation_time = timeit.default_timer() - start_time
                 computation_fps = 1 / computation_time
@@ -217,13 +231,17 @@ def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask,
                     wait_time = 0
 
                 key = cv2.waitKey(wait_time) & 0xFF
-                if key == ESCAPE_KEY or cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE) < 1:
-                    cv2.destroyWindow(WINDOW_NAME)
-                    cap.release()
-                    sys.exit(0)
-                elif key == ord("q"):
-                    break
-                elif key == ord("n"):
+
+                if not no_gui:
+                    if key == ESCAPE_KEY or cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE) < 1:
+                        cv2.destroyWindow(WINDOW_NAME)
+                        cap.release()
+                        sys.exit(0)
+                    elif key == ord("q"):
+                        break
+                    elif key == ord("n"):
+                        pass
+                else:
                     pass
 
                 frame_num += 1
@@ -238,13 +256,16 @@ def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask,
         else:
             file_name = "temp"
 
-        file_folder = './data'
+        file_folder = os.path.join(REPO_PATH, 'data')
         os.makedirs(file_folder, exist_ok=True)
         csv_path = os.path.join(file_folder, "%s.csv" % file_name)
         df_total.to_csv(csv_path, float_format="%.8f", index=False)
 
     logging.info("processed %s frames in total" % frame_num)
     cap.release()
+
+    if output_video:
+        outvideo_writer.release()
 
 
 def main():
@@ -258,13 +279,14 @@ def main():
     parser.add_option('--vis_mask', action="store_true", default=False, help=None)
     parser.add_option('--csv', action="store_true", default=False, help=None)
     parser.add_option('--frame_max', action="store", default=-1, help=None)
+    parser.add_option('--output_video', action="store_true", default=False, help=None)
 
     options, args = parser.parse_args()
 
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=options.logging.upper())
 
     demo(options.video_path, options.video_name, options.model_path, options.calib_path, options.auto, options.vis_mask,
-         options.csv, int(options.frame_max))
+         options.csv, int(options.frame_max), options.output_video, no_gui=True)
 
 
 if __name__ == "__main__":

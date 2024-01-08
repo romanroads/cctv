@@ -27,13 +27,14 @@ def load_decryption_key():
     else:
         repo_path = REPO_PATH
 
-    user_sample_folder = os.path.join(repo_path, USER_SAMPLE_FOLDER)
-    python_folder = os.path.join(user_sample_folder, PYTHON_FOLDER)
-    cred_folder = os.path.join(python_folder, CREDENTIAL_FOLDER)
-    key_file = os.path.join(cred_folder, DECRYPTION_KEY_FILE)
+    # user_sample_folder = os.path.join(repo_path, USER_SAMPLE_FOLDER)
+    # python_folder = os.path.join(user_sample_folder, PYTHON_FOLDER)
+    # cred_folder = os.path.join(python_folder, CREDENTIAL_FOLDER)
+    # key_file = os.path.join(cred_folder, DECRYPTION_KEY_FILE)
+    key_file = os.path.join(repo_path, CREDENTIAL_FOLDER, DECRYPTION_KEY_FILE)
 
     if not os.path.exists(key_file):
-        logging.error("load_decryption_key: key_file does not exist")
+        logging.error("load_decryption_key: key_file %s does not exist", key_file)
         sys.exit(0)
 
     with open(key_file, "r") as f:

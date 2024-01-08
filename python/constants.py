@@ -18,11 +18,11 @@ AWS_REGION_CN = "cn-north-1"
 
 AWS_S3_VIDEO_BUCKET = "user-upload-data"
 
-# Note: /home/element_symbolic_link is a symbolic link that points to repo folder
-REPO_PATH = "/home/element_symbolic_link"
+# Note: /home/element_cctv_symbolic_link is a symbolic link that points to repo folder
+REPO_PATH = "/home/element_cctv_symbolic_link"
 
-# Note: C:\Users\element_symbolic_link is a symbolic link that needs to be created on your machine
-REPO_PATH_WINDOWS = r"C:\Users\element_symbolic_link"
+# Note: C:\Users\element_cctv_symbolic_link is a symbolic link that needs to be created on your machine
+REPO_PATH_WINDOWS = r"C:\Users\element_cctv_symbolic_link"
 
 USER_SAMPLE_FOLDER = "user_sample"
 PYTHON_FOLDER = "python"
