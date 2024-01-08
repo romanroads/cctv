@@ -73,6 +73,7 @@ def demo(video_path, video_name, model_path, cam_par_path, auto, visualize_mask,
         video_file_name_output = os.path.join(video_path, "%s_output.mp4" % (video_name.split(".")[0]))
         outvideo_writer = cv2.VideoWriter(video_file_name_output, cv2.VideoWriter_fourcc(*'mp4v'),
                                           fps, (input_video_width, input_video_height))
+        logging.info("output video at %s" % video_file_name_output)
 
     if data_type == "mp4":
         if frame_count <= 0:

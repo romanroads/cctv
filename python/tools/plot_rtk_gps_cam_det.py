@@ -90,6 +90,7 @@ def compute_metrics(df_meas, df_gt, to_fit):
 
     # Note: A, B, C and D 4 different metrics, A is CTE which does not need timestamp
     # B, C and D needs timestamp to make measurements at each timestamp
+    print("joe", meas_space.shape, gt_space.shape, len(meas_image_loc))
     metric_a_tuple, x_fit, y_fit, x_meas, y_meas = compute_cte(meas_space, gt_space, meas_image_loc, to_fit=to_fit)
     metric_b_tuple, metric_c_tuple, metric_d_tuple = compute_time_dependent_error(meas_space, meas_time, gt_space,
                                                                                gt_time, meas_image_loc)
@@ -341,7 +342,6 @@ def main():
         for i in range(n_cam):
             to_fit, ts_start, a_id, g_start, g_steps, g_file, c_file, c_video =\
                 configs[i * n_config: (i + 1) * n_config]
-
             to_fit, ts_start, a_id, g_start, g_steps, g_file, c_file, c_video =\
                 eval(to_fit), int(ts_start), int(a_id), int(g_start), int(g_steps), g_file, c_file, c_video
 

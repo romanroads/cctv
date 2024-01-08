@@ -1,4 +1,4 @@
-# Copyright 2019 - 2021 The ROMAN ROADS Developers. All Rights Reserved.
+# Copyright 2019 - 2024 The ROMAN ROADS Developers. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ def compute_cte(meas, gt, meas_image_loc, to_fit=True):
     :param to_fit:
     :return:
     """
+    if len(meas.shape) != 2:
+        return [], 0, 0, 0, 0
+
     ctes = []
 
     if to_fit:
@@ -125,6 +128,8 @@ def compute_cte(meas, gt, meas_image_loc, to_fit=True):
 
 
 def compute_time_dependent_error(meas_space, meas_time, gt_space, gt_time, meas_image_loc):
+    if len(meas_space.shape) != 2:
+        return [], [], []
 
     delta_t_gt = gt_time[1] - gt_time[0]
     logging.info("compute_cte: ground truth trace was recorded at period of %.3f ms" % delta_t_gt)
