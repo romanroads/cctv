@@ -52,6 +52,7 @@ def compute_metrics(df_meas, df_gt, to_fit):
     global X_0, Y_0
 
     column_names = ['Latitude', 'Longitude', 'Timestamp', 'Fx', 'Fy', 'Fw', 'Fh']
+
     meas = df_meas[column_names].to_numpy()
     gt = df_gt[column_names].to_numpy()
 
@@ -90,7 +91,6 @@ def compute_metrics(df_meas, df_gt, to_fit):
 
     # Note: A, B, C and D 4 different metrics, A is CTE which does not need timestamp
     # B, C and D needs timestamp to make measurements at each timestamp
-    print("joe", meas_space.shape, gt_space.shape, len(meas_image_loc))
     metric_a_tuple, x_fit, y_fit, x_meas, y_meas = compute_cte(meas_space, gt_space, meas_image_loc, to_fit=to_fit)
     metric_b_tuple, metric_c_tuple, metric_d_tuple = compute_time_dependent_error(meas_space, meas_time, gt_space,
                                                                                gt_time, meas_image_loc)
@@ -142,7 +142,14 @@ def plot_metrics(title, index_obs, img, stats, thumbnail_image, color_codes, col
 
         h_counts, _, _ = np.histogram2d(fy, fx, bins=(h_edges, w_edges))
         h_weights, _, _ = np.histogram2d(fy, fx, bins=(h_edges, w_edges), weights=np.abs(obs))
-        h_weighted_ave = h_weights / h_counts
+
+        #h_weighted_ave = h_weights / h_counts
+        h_weighted_ave = np.zeros(h_weights.shape)
+        for i_r in range(h_weights.shape[0]):
+            for i_c in range(h_weights.shape[1]):
+                if h_counts[i_r, i_c] > 0:
+                    h_weighted_ave[i_r, i_c] = h_weights[i_r, i_c] / h_counts[i_r, i_c]
+
         h_weighted_ave = np.nan_to_num(h_weighted_ave, nan=0)
         cte_heatmap += h_weighted_ave
         cte_heatmap_counts += (h_counts > 0).astype(int)
@@ -155,7 +162,13 @@ def plot_metrics(title, index_obs, img, stats, thumbnail_image, color_codes, col
                                         label="Trip%s" % (i + 1))
             n_trace_with_obs += 1
 
-    cte_heatmap = cte_heatmap / cte_heatmap_counts
+    # cte_heatmap = cte_heatmap / cte_heatmap_counts
+    # TODO use this approach below instead
+    for i_r in range(cte_heatmap.shape[0]):
+        for i_c in range(cte_heatmap.shape[1]):
+            if cte_heatmap_counts[i_r, i_c] > 0:
+                cte_heatmap[i_r, i_c] = cte_heatmap[i_r, i_c] / cte_heatmap_counts[i_r, i_c]
+
     cte_heatmap = interpolate_2d_distribution(cte_heatmap, None)
 
     if n_trace_with_obs > 1:
@@ -302,12 +315,12 @@ def plot_statistics(stats, thumbnail_image):
 
     plot_metrics("Cross-track-error [m]", 0, img, stats, thumbnail_image, color_codes, color_code,
                  -2, 2, 16, 0)
-    plot_metrics("Delta D [m]", 1, img, stats, thumbnail_image, color_codes, color_code,
-                 -3, 3, 16, 0)
-    plot_metrics("Delta D Lateral [m]", 2, img, stats, thumbnail_image, color_codes, color_code,
-                 -3, 3, 31, 0)
-    plot_metrics("Delta D Longitudinal [m]", 3, img, stats, thumbnail_image, color_codes, color_code,
-                 -3, 3, 31, 0)
+    #plot_metrics("Delta D [m]", 1, img, stats, thumbnail_image, color_codes, color_code,
+    #             -3, 3, 16, 0)
+    #plot_metrics("Delta D Lateral [m]", 2, img, stats, thumbnail_image, color_codes, color_code,
+    #             -3, 3, 31, 0)
+    #plot_metrics("Delta D Longitudinal [m]", 3, img, stats, thumbnail_image, color_codes, color_code,
+    #             -3, 3, 31, 0)
 
     plot_trace(stats, color_codes, img)
 
@@ -345,8 +358,9 @@ def main():
             to_fit, ts_start, a_id, g_start, g_steps, g_file, c_file, c_video =\
                 eval(to_fit), int(ts_start), int(a_id), int(g_start), int(g_steps), g_file, c_file, c_video
 
-            tuple_stat, thumbnail_image = compute_statistics(g_file, g_start, g_steps, c_file, c_video, a_id, options.auto,
-                                                      options.map, ts_start, to_fit)
+            tuple_stat, thumbnail_image = compute_statistics(g_file, g_start, g_steps, c_file, c_video, a_id,
+                                                             options.auto, options.map, ts_start, to_fit)
+
             stats.append(tuple_stat)
 
         plot_statistics(stats, thumbnail_image)
