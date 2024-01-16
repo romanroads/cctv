@@ -20,9 +20,29 @@ conda env create --file environment_ubuntu.yml
 
 #### How to run QA script to make all the plots
 ```
-
+conda activate element_ubuntu
 cd python
-./shell_scripts/run_qa.sh --batch
+./shell_scripts/run_qa.sh --batch --data_path your_path_to_the_processed_data
+
+Example A:
+
+conda activate element_ubuntu
+cd python
+./shell_scripts/run_qa.sh --batch --data_path /home/element_cctv_symbolic_link/data/
+
+this will not render or pop out any windows, but dump out PNG files such as:
+
+
+
+Example B:
+
+conda activate element_ubuntu
+cd python
+./shell_scripts/run_qa.sh --data_path /home/element_cctv_symbolic_link/data/
+
+this will pop out windows to render the plots, figures, you should run this on your
+local computer or ssh to a machine with X-window enabled
+
 
 ```
 

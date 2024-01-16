@@ -4,7 +4,7 @@ DATA_PATH="./"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --batch) BATCH_MODE=1; shift ;;
+        --batch) BATCH_MODE=1; ;;
         --data_path) DATA_PATH="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
@@ -18,4 +18,10 @@ export configs=\
 "False,-1,29,600,500,${DATA_PATH}/trip4.csv,${DATA_PATH}/25_6a765b18-60bd-439c-a03f-295edd9d4b09_Exp4_Run9_Trip0_User.csv,${DATA_PATH}/25_6a765b18-60bd-439c-a03f-295edd9d4b09_Exp4_Run9_Trip0_User.mp4,"\
 "False,-1,8,2400,5000,${DATA_PATH}/trip5.csv,${DATA_PATH}/25_6a765b18-60bd-439c-a03f-295edd9d4b09_Exp4_Run12_Trip0_User.csv,${DATA_PATH}/25_6a765b18-60bd-439c-a03f-295edd9d4b09_Exp4_Run12_Trip0_User.mp4"
 
-python tools/plot_rtk_gps_cam_det.py --auto --configs "${configs}"
+
+if [ "${BATCH_MODE}" == 1 ];
+then
+  python tools/plot_rtk_gps_cam_det.py --auto --configs "${configs}" --batch
+else
+  python tools/plot_rtk_gps_cam_det.py --auto --configs "${configs}"
+fi

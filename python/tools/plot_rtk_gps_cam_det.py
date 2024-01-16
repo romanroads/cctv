@@ -27,14 +27,15 @@ Y_0 = None
 
 
 def compute_statistics(gps_file, gps_start, gps_steps, cam_file, cam_video, target_agent_id, auto, is_plot_map,
-                       ts_start, to_fit):
+                       ts_start, to_fit, batch=False):
     list_traces = []
 
     gps_trace_df = load_gps(gps_file, gps_start, gps_steps)
     list_traces.append(gps_trace_df)
 
     target_trace_df, thumbnail_image = load_cam(cam_file, cam_video, target_agent_id, auto, WINDOW_NAME, ESCAPE_KEY,
-                                                WIDTH_WINDOW, WINDOW_START_WIDTH, WINDOW_START_HEIGHT, ts_start)
+                                                WIDTH_WINDOW, WINDOW_START_WIDTH, WINDOW_START_HEIGHT, ts_start,
+                                                batch=batch)
 
     list_traces.append(target_trace_df)
 
@@ -143,7 +144,7 @@ def plot_metrics(title, index_obs, img, stats, thumbnail_image, color_codes, col
         h_counts, _, _ = np.histogram2d(fy, fx, bins=(h_edges, w_edges))
         h_weights, _, _ = np.histogram2d(fy, fx, bins=(h_edges, w_edges), weights=np.abs(obs))
 
-        #h_weighted_ave = h_weights / h_counts
+        # h_weighted_ave = h_weights / h_counts
         h_weighted_ave = np.zeros(h_weights.shape)
         for i_r in range(h_weights.shape[0]):
             for i_c in range(h_weights.shape[1]):
@@ -200,6 +201,8 @@ def plot_metrics(title, index_obs, img, stats, thumbnail_image, color_codes, col
 
     plt.tight_layout()
 
+    return f
+
 
 def plot_trace(stats, color_codes, img):
     n_trace = len(stats)
@@ -232,6 +235,8 @@ def plot_trace(stats, color_codes, img):
                aspect="auto")
 
     plt.tight_layout()
+
+    return f
 
 
 def plot_delta_d_vs_dist(stats, img):
@@ -305,15 +310,17 @@ def plot_delta_d_vs_dist(stats, img):
 
     plt.tight_layout()
 
+    return f
 
-def plot_statistics(stats, thumbnail_image):
+
+def plot_statistics(stats, thumbnail_image, batch=False):
     img = Image.open("./artifacts/ROMAN_ROADS_LOGO_COLOR.png")
     img.thumbnail((500, 500), Image.ANTIALIAS)
 
     color_codes = [np.random.rand(3, ) for _ in range(len(stats))]
     color_code = np.random.rand(3, )
 
-    plot_metrics("Cross-track-error [m]", 0, img, stats, thumbnail_image, color_codes, color_code,
+    fig1 = plot_metrics("Cross-track-error [m]", 0, img, stats, thumbnail_image, color_codes, color_code,
                  -2, 2, 16, 0)
     #plot_metrics("Delta D [m]", 1, img, stats, thumbnail_image, color_codes, color_code,
     #             -3, 3, 16, 0)
@@ -322,11 +329,16 @@ def plot_statistics(stats, thumbnail_image):
     #plot_metrics("Delta D Longitudinal [m]", 3, img, stats, thumbnail_image, color_codes, color_code,
     #             -3, 3, 31, 0)
 
-    plot_trace(stats, color_codes, img)
+    fig2 = plot_trace(stats, color_codes, img)
 
-    plot_delta_d_vs_dist(stats, img)
+    fig3 = plot_delta_d_vs_dist(stats, img)
 
-    plt.show()
+    if batch:
+        fig1.savefig("cross_track_error.png")
+        fig2.savefig("trace.png")
+        fig3.savefig("error_vs_distance.png")
+    else:
+        plt.show()
 
 
 def main():
@@ -343,6 +355,8 @@ def main():
     parser.add_option('--map', action="store_true", default=False)
     parser.add_option('--ts_start', action="store", default=-1, help=None)
     parser.add_option('--to_fit', action="store_true", default=False, help=None)
+    parser.add_option('--batch', action="store_true", default=False)
+
     options, args = parser.parse_args()
 
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=options.logging.upper())
@@ -359,16 +373,18 @@ def main():
                 eval(to_fit), int(ts_start), int(a_id), int(g_start), int(g_steps), g_file, c_file, c_video
 
             tuple_stat, thumbnail_image = compute_statistics(g_file, g_start, g_steps, c_file, c_video, a_id,
-                                                             options.auto, options.map, ts_start, to_fit)
+                                                             options.auto, options.map, ts_start, to_fit,
+                                                             batch=options.batch)
 
             stats.append(tuple_stat)
 
-        plot_statistics(stats, thumbnail_image)
+        plot_statistics(stats, thumbnail_image, batch=options.batch)
     else:
         tuple_stat, thumbnail_image = compute_statistics(options.gps_file, int(options.gps_start), int(options.gps_steps),
                                                   options.cam_file, options.cam_video, int(options.agent_id),
-                                                  options.auto, options.map, int(options.ts_start), options.to_fit)
-        plot_statistics([tuple_stat], thumbnail_image)
+                                                  options.auto, options.map, int(options.ts_start), options.to_fit,
+                                                  batch=options.batch)
+        plot_statistics([tuple_stat], thumbnail_image, batch=options.batch)
 
 
 if __name__ == "__main__":

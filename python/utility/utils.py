@@ -107,7 +107,7 @@ def load_gps(csv_file, start_step, num_steps):
 
 
 def load_cam(csv_file, video_file, target_agent_id, auto, window_name, escape_key, width_window, window_start_width,
-             window_start_height, ts_start):
+             window_start_height, ts_start, batch=False):
     global CUR_ID
 
     df_total = pd.read_csv(csv_file)
@@ -130,10 +130,14 @@ def load_cam(csv_file, video_file, target_agent_id, auto, window_name, escape_ke
     logging.info("input video has %s frames, with frame size w (%s) x h (%s) and fps %.1f, frame_max = %s" %
                  (frame_count, input_video_width, input_video_height, fps, frame_max))
 
-    cv2.namedWindow(window_name, cv2.WINDOW_GUI_EXPANDED)
+    if not batch:
+        cv2.namedWindow(window_name, cv2.WINDOW_GUI_EXPANDED)
+
     height_window = int(width_window * (input_video_height * 1. / input_video_width))
-    cv2.resizeWindow(window_name, width_window, height_window)
-    cv2.moveWindow(window_name, window_start_width, window_start_height)
+
+    if not batch:
+        cv2.resizeWindow(window_name, width_window, height_window)
+        cv2.moveWindow(window_name, window_start_width, window_start_height)
 
     frame_num = 0
     CUR_ID = 0
@@ -162,7 +166,8 @@ def load_cam(csv_file, video_file, target_agent_id, auto, window_name, escape_ke
         update_existing_and_create_new_tracklets_using_detection(tracklets, detections, fps)
         update_existing_tracklets_using_image_tracking(tracklets, frame_ori, frame_num, target_agent_id, trace)
 
-        cv2.imshow(window_name, frame_ori)
+        if not batch:
+            cv2.imshow(window_name, frame_ori)
 
         if auto:
             wait_time = 1
@@ -170,13 +175,16 @@ def load_cam(csv_file, video_file, target_agent_id, auto, window_name, escape_ke
             wait_time = 0
 
         key = cv2.waitKey(wait_time) & 0xFF
-        if key == escape_key or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
-            cv2.destroyWindow(window_name)
-            cap.release()
-            sys.exit(0)
-        elif key == ord("q"):
-            break
-        elif key == ord("n"):
+        if not batch:
+            if key == escape_key or cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) < 1:
+                cv2.destroyWindow(window_name)
+                cap.release()
+                sys.exit(0)
+            elif key == ord("q"):
+                break
+            elif key == ord("n"):
+                pass
+        else:
             pass
 
         frame_num += 1
