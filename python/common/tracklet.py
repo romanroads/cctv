@@ -119,7 +119,9 @@ class Tracklet:
     def is_duplicate(self, bounding_polygon, index_detection=None):
         intersection = self.bounding_polygon.intersection(bounding_polygon).area
         union = self.bounding_polygon.union(bounding_polygon).area
-        iou = intersection / union
+
+        iou = intersection / union if union > 0 else 0.
+
         is_iou_too_large = iou > IOU_BETWEEN_TWO_POLYGON_TO_AVOID_DUP
 
         return is_iou_too_large

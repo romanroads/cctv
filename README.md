@@ -31,7 +31,9 @@ cd python
 ./shell_scripts/run_qa.sh --batch --data_path /home/element_cctv_symbolic_link/data/
 
 this will not render or pop out any windows, but dump out PNG files such as:
-
+- cross_track_error.png
+- error_vs_distance.png
+- trace.png
 
 
 Example B:
