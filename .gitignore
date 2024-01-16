@@ -2,4 +2,6 @@
 data
 credentials
 .idea
-
+*.zip
+data*
+*.mp4
